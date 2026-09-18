@@ -1,0 +1,764 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+
+<head>
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Smart Edu Pro - Graduation Project</title>
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #111827;
+            color: white;
+            min-height: 100vh;
+        }
+
+        header {
+            text-align: center;
+            padding: 18px 15px;
+            background: #0f172a;
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 25px;
+        }
+
+        header p {
+            margin: 8px 0 0;
+            color: #cbd5e1;
+            font-size: 15px;
+        }
+
+        .gallery {
+            max-width: 1200px;
+            margin: auto;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .image-container {
+            min-height: 70vh;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #projectImage {
+            max-width: 100%;
+            max-height: 75vh;
+
+            object-fit: contain;
+
+            border-radius: 12px;
+
+            box-shadow:
+            0 10px 35px rgba(0,0,0,.45);
+
+            background: white;
+
+            transition:
+            opacity 0.2s ease;
+        }
+
+        .filename {
+            margin-top: 15px;
+            font-size: 17px;
+            color: #e2e8f0;
+        }
+
+        .controls {
+
+            display: flex;
+
+            justify-content: center;
+            align-items: center;
+
+            gap: 15px;
+
+            margin-top: 18px;
+        }
+
+        button {
+
+            border: none;
+
+            padding: 12px 25px;
+
+            border-radius: 8px;
+
+            font-size: 17px;
+
+            cursor: pointer;
+
+            background: #2563eb;
+
+            color: white;
+
+            transition: 0.2s;
+        }
+
+        button:hover {
+            background: #1d4ed8;
+        }
+
+        button:active {
+            transform: scale(0.96);
+        }
+
+        #counter {
+
+            min-width: 80px;
+
+            font-size: 17px;
+
+            direction: ltr;
+        }
+
+        .loading {
+
+            font-size: 20px;
+
+            padding: 50px;
+        }
+
+        .error {
+            color: #fca5a5;
+        }
+
+
+        @media (max-width: 600px) {
+
+            header h1 {
+                font-size: 20px;
+            }
+
+            header p {
+                font-size: 14px;
+            }
+
+            .gallery {
+                padding: 10px;
+            }
+
+            .image-container {
+                min-height: 65vh;
+            }
+
+            #projectImage {
+                max-height: 68vh;
+            }
+
+            button {
+                padding: 11px 18px;
+                font-size: 15px;
+            }
+
+            .filename {
+                font-size: 15px;
+            }
+
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+
+<header>
+
+    <h1>
+        Smart Edu Pro
+    </h1>
+
+    <p>
+        Graduation Project - University Management and Educational System
+    </p>
+
+</header>
+
+
+
+<div class="gallery">
+
+
+    <div id="loading"
+         class="loading">
+
+        جاري تحميل صور المشروع...
+
+    </div>
+
+
+
+    <div id="galleryContent"
+         style="display:none;">
+
+
+        <div class="image-container"
+             id="imageContainer">
+
+            <img
+                id="projectImage"
+                alt="Smart Edu Pro Screenshot"
+            >
+
+        </div>
+
+
+
+        <div class="filename"
+             id="filename">
+        </div>
+
+
+
+        <div class="controls">
+
+
+            <button onclick="previousImage()">
+
+                السابق
+
+            </button>
+
+
+            <span id="counter"></span>
+
+
+            <button onclick="nextImage()">
+
+                التالي
+
+            </button>
+
+
+        </div>
+
+
+    </div>
+
+
+</div>
+
+
+
+<script>
+
+
+const api =
+"https://api.github.com/repos/ahmedalshapoty-dev/smart-edu-pro/contents/";
+
+
+
+let images = [];
+
+let current = 0;
+
+
+
+const imgElement =
+document.getElementById("projectImage");
+
+const filenameElement =
+document.getElementById("filename");
+
+const counterElement =
+document.getElementById("counter");
+
+
+
+fetch(api)
+
+.then(response => {
+
+    if (!response.ok) {
+        throw new Error("GitHub API Error");
+    }
+
+    return response.json();
+
+})
+
+.then(files => {
+
+
+    images = files.filter(file => {
+
+        const name =
+        file.name.toLowerCase();
+
+
+        return (
+
+            name.endsWith(".png") ||
+
+            name.endsWith(".jpg") ||
+
+            name.endsWith(".jpeg") ||
+
+            name.endsWith(".webp")
+
+        );
+
+    });
+
+
+
+    /*
+       نحاول وضع الشاشة الرئيسية
+       أو Home أو Main في البداية
+    */
+
+    images.sort((a, b) => {
+
+
+        const aName =
+        a.name.toLowerCase();
+
+        const bName =
+        b.name.toLowerCase();
+
+
+        const aMain =
+
+        aName.includes("الرئيس") ||
+
+        aName.includes("home") ||
+
+        aName.includes("main") ||
+
+        aName.includes("dashboard");
+
+
+        const bMain =
+
+        bName.includes("الرئيس") ||
+
+        bName.includes("home") ||
+
+        bName.includes("main") ||
+
+        bName.includes("dashboard");
+
+
+
+        if (aMain && !bMain)
+            return -1;
+
+
+        if (!aMain && bMain)
+            return 1;
+
+
+        return a.name.localeCompare(
+            b.name,
+            "ar"
+        );
+
+    });
+
+
+
+    if (images.length === 0) {
+
+
+        document.getElementById(
+            "loading"
+        ).innerHTML =
+
+        '<span class="error">لا توجد صور داخل المستودع.</span>';
+
+
+        return;
+
+    }
+
+
+
+    document.getElementById(
+        "loading"
+    ).style.display =
+    "none";
+
+
+
+    document.getElementById(
+        "galleryContent"
+    ).style.display =
+    "block";
+
+
+
+    showImage();
+
+
+
+    /*
+       تحميل بقية الصور مسبقاً
+       لتسريع التنقل
+    */
+
+    preloadAllImages();
+
+
+})
+
+.catch(error => {
+
+
+    document.getElementById(
+        "loading"
+    ).innerHTML =
+
+    '<span class="error">حدث خطأ أثناء تحميل الصور.</span>';
+
+
+});
+
+
+
+
+
+function showImage() {
+
+
+    if (images.length === 0)
+        return;
+
+
+
+    const image =
+    images[current];
+
+
+
+    filenameElement.innerText =
+    image.name;
+
+
+
+    counterElement.innerText =
+
+    (current + 1) +
+    " / " +
+    images.length;
+
+
+
+    imgElement.style.opacity =
+    "0.4";
+
+
+
+    imgElement.onload =
+    function() {
+
+
+        imgElement.style.opacity =
+        "1";
+
+
+        preloadNearbyImages();
+
+    };
+
+
+
+    imgElement.onerror =
+    function() {
+
+
+        imgElement.style.opacity =
+        "1";
+
+
+        filenameElement.innerText =
+
+        "تعذر تحميل الصورة";
+
+
+    };
+
+
+
+    imgElement.src =
+    image.download_url;
+
+
+}
+
+
+
+
+
+function nextImage() {
+
+
+    current =
+
+    (current + 1)
+    %
+    images.length;
+
+
+    showImage();
+
+
+}
+
+
+
+
+
+function previousImage() {
+
+
+    current =
+
+    (
+        current
+        - 1
+        + images.length
+    )
+    %
+    images.length;
+
+
+    showImage();
+
+
+}
+
+
+
+
+
+function preloadNearbyImages() {
+
+
+    const nextIndex =
+
+    (current + 1)
+    %
+    images.length;
+
+
+
+    const previousIndex =
+
+    (
+        current
+        - 1
+        + images.length
+    )
+    %
+    images.length;
+
+
+
+    const nextImage =
+    new Image();
+
+
+    nextImage.src =
+    images[nextIndex]
+    .download_url;
+
+
+
+    const previousImage =
+    new Image();
+
+
+    previousImage.src =
+    images[previousIndex]
+    .download_url;
+
+
+}
+
+
+
+
+
+function preloadAllImages() {
+
+
+    images.forEach(image => {
+
+
+        const preload =
+        new Image();
+
+
+        preload.src =
+        image.download_url;
+
+
+    });
+
+
+}
+
+
+
+
+
+/*
+   التنقل بأسهم الكيبورد
+*/
+
+
+document.addEventListener(
+"keydown",
+function(event) {
+
+
+    if (
+        event.key ===
+        "ArrowRight"
+    ) {
+
+        nextImage();
+
+    }
+
+
+
+    if (
+        event.key ===
+        "ArrowLeft"
+    ) {
+
+        previousImage();
+
+    }
+
+
+});
+
+
+
+
+
+/*
+   السحب على الهاتف
+*/
+
+
+let touchStartX = 0;
+
+let touchEndX = 0;
+
+
+
+const container =
+
+document.getElementById(
+    "imageContainer"
+);
+
+
+
+container.addEventListener(
+"touchstart",
+function(event) {
+
+
+    touchStartX =
+
+    event.changedTouches[0]
+    .screenX;
+
+
+},
+{
+    passive: true
+});
+
+
+
+container.addEventListener(
+"touchend",
+function(event) {
+
+
+    touchEndX =
+
+    event.changedTouches[0]
+    .screenX;
+
+
+    handleSwipe();
+
+
+},
+{
+    passive: true
+});
+
+
+
+
+
+function handleSwipe() {
+
+
+    const difference =
+
+    touchStartX -
+    touchEndX;
+
+
+
+    if (
+        Math.abs(difference)
+        <
+        50
+    ) {
+
+        return;
+
+    }
+
+
+
+    if (difference > 0) {
+
+
+        nextImage();
+
+
+    } else {
+
+
+        previousImage();
+
+
+    }
+
+
+}
+
+
+</script>
+
+
+</body>
+
+</html>
